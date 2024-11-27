@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        button { padding: 10px 20px; margin: 10px; }
+        .brightness-slider {
+            writing-mode: bt-lr; /* Vertical slider */
+            -webkit-appearance: slider-vertical;
+            height: 150px;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Home Light Control</h1>
+
+    <!-- Bedside Lamp Controls -->
+    <div>
+        <h3>Alex's Bedside Lamp</h3>
+        <button onclick="sendCommand('bedside_lamp', {state: 'ON'})">Turn ON</button>
+        <button onclick="sendCommand('bedside_lamp', {state: 'OFF'})">Turn OFF</button>
+        <input type="color" id="bedside_lamp_color" onchange="setColor('bedside_lamp', this.value)">
+        <br>
+        <input type="range" class="brightness-slider" min="0" max="255" value="128" id="bedside_lamp_brightness" 
+               onchange="setBrightness('bedside_lamp', this.value)">
+    </div>
+
+    <!-- Desk Lamp Controls -->
+    <div>
+        <h3>Alex's Desk Lamp</h3>
+        <button onclick="sendCommand('desk_lamp', {state: 'ON'})">Turn ON</button>
+        <button onclick="sendCommand('desk_lamp', {state: 'OFF'})">Turn OFF</button>
+        <input type="color" id="desk_lamp_color" onchange="setColor('desk_lamp', this.value)">
+        <br>
+        <input type="range" class="brightness-slider" min="0" max="255" value="128" id="desk_lamp_brightness" 
+               onchange="setBrightness('desk_lamp', this.value)">
+    </div>
+
+    <!-- Kid's Bedroom Light Switch Controls -->
+    <div>
+        <h3>Kid's Bedroom Light Switch (DOOR LIGHT)</h3>
+        <button onclick="sendCommand('kbr_light', {state_left: 'ON'})">Turn ON</button>
+        <button onclick="sendCommand('kbr_light', {state_left: 'OFF'})">Turn OFF</button>
+    </div>
+
+    <div></div>
+        <h3>Kid's Bedroom Light Switch (MAIN LIGHT)</h3>
+        <button onclick="sendCommand('kbr_light', {state_right: 'ON'})">Turn ON</button>
+        <button onclick="sendCommand('kbr_light', {state_right: 'OFF'})">Turn OFF</button>
+    </div>
+
+    <!-- Aqara Switch Controls -->
+    <div>
+        <h3>Hallway Light Switch</h3>
+        <button onclick="sendCommand('hlw_light', {state: 'ON'})">Turn ON</button>
+        <button onclick="sendCommand('hlw_light', {state: 'OFF'})">Turn OFF</button>
+    </div>
+
+    <script>
+        function sendCommand(light, command) {
+            fetch("/control", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ light: light, command: command })
+            })
+            .then(response => response.json())
+            //.then(data => alert(data.status === "success" ? "Command sent!" : "Error: " + data.message));
+        }
+
+        function setColor(light, hexColor) {
+            const rgb = hexToRgb(hexColor);
+            sendCommand(light, { color: { r: rgb.r, g: rgb.g, b: rgb.b } });
+        }
+
+        function setBrightness(light, brightness) {
+            sendCommand(light, { brightness: parseInt(brightness, 10) });
+        }
+
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            return {
+                r: (bigint >> 16) & 255,
+                g: (bigint >> 8) & 255,
+                b: bigint & 255
+            };
+        }
+    </script>
+</body>
+</html>
